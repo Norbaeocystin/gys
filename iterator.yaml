@@ -1,0 +1,21 @@
+name: "zoznam scrapper"
+version: 1.0.0
+description: "Zoznam scraper"
+# input url
+iterator:
+  url: "https://www.zoznam.sk/katalog/Spravodajstvo-informacie/Abecedny-zoznam-firiem/A/sekcia.fcgi?sid=1173&so=&page=PAGE"
+  replace: "PAGE"
+  min: 1
+  max: 10
+#identifygi
+identificator:
+  selector: "a.link_title"
+  attribute: "href"
+  name: "url"
+  type: "many" # one or many
+  default: ""
+  base: "https://www.zoznam.sk"
+#output
+output:
+  format: "text"
+  delimiter: "\n"
