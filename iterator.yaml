@@ -6,8 +6,8 @@ iterator:
   url: "https://www.zoznam.sk/katalog/Spravodajstvo-informacie/Abecedny-zoznam-firiem/A/sekcia.fcgi?sid=1173&so=&page=PAGE"
   replace: "PAGE"
   min: 1
-  max: 10
-#identifygi
+  max: 2
+#identify
 identificator:
   selector: "a.link_title"
   attribute: "href"
@@ -18,4 +18,4 @@ identificator:
 #output
 output:
   format: "text"
-  delimiter: "\n"
+  delimiter: ","
