@@ -12,31 +12,35 @@ func Extract( gys gysyaml.Gys) []map[string]string {
 	results := make([]map[string]string,0)
 	for _, url := range urls{
 		res := ExtractInfoUrl(url, &gys)
-		res["source"] = url
-		results = append(results, res)
+		results = append(results, res...)
 	}
 	return results
 }
 
-func ExtractInfoUrl(urlstring string, gys *gysyaml.Gys) map[string]string {
+func ExtractInfoUrl(urlstring string, gys *gysyaml.Gys) []map[string]string {
 	ext := gys.Extractor
-	result := make(map[string]string)
 	doc := GetDoc(urlstring)
 	typ := ext.Type
 	switch typ{
 	case "many":
+		results := make([]map[string]string,0)
 		doc.Find(ext.Selector).Each(func(i int, s *goquery.Selection){
 			for _, sub := range ext.Subselectors{
+				result := make(map[string]string)
 				ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *s)
+				results = append(results, result)
 			}
 		})
+		return results
 	case "one":
+		result := make(map[string]string)
 		r := doc.Find(ext.Selector)
 		for _, sub := range ext.Subselectors{
 			ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *r)
 		}
+		res := []map[string]string{result}
+		return res
 	}
-	return result
 }
 
 
