@@ -28,12 +28,14 @@ func ExtractInfoUrl(urlstring string, gys *gysyaml.Gys) []map[string]string {
 			for _, sub := range ext.Subselectors{
 				result := make(map[string]string)
 				ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *s)
+				result["urlsource"] = urlstring
 				results = append(results, result)
 			}
 		})
 		return results
 	case "one":
 		result := make(map[string]string)
+		result["urlsource"] = urlstring
 		r := doc.Find(ext.Selector)
 		for _, sub := range ext.Subselectors{
 			ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *r)
@@ -41,6 +43,7 @@ func ExtractInfoUrl(urlstring string, gys *gysyaml.Gys) []map[string]string {
 		res := []map[string]string{result}
 		return res
 	}
+	return make([]map[string]string,0)
 }
 
 
