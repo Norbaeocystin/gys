@@ -2,13 +2,14 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"gopkg.in/yaml.v2"
 	"gys/gysyaml"
 	gys2 "gys/gysyaml/gys"
 	"io/ioutil"
-	"log"
+	"strconv"
 	"strings"
 )
 
@@ -32,15 +33,19 @@ func main() {
 func extractor(gys gysyaml.Gys){
 	result := gys2.Extract(gys)
 	for _, r := range result{
+		clean := make(map[string]string)
 		for k,v := range r{
-			log.Println(k,v)
+			key := strconv.QuoteToASCII(string(k))
+			value := strconv.QuoteToASCII(string(v))
+			clean[key] = value
+		}
+		jsonBytes, _ := json.Marshal(clean)
+		fmt.Println(string(jsonBytes))
 		}
 	}
-}
 
 
 func iterator(gys gysyaml.Gys) {
-	log.Println("hovno")
 	links := gys2.GenerateLinks(gys.Iterator.Url, gys.Iterator.Replace, gys.Iterator.Min, gys.Iterator.Max)
 	results := make([]string,0)
 	for _, link := range links{
