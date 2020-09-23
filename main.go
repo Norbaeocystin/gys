@@ -9,6 +9,7 @@ import (
 	"gys/gysyaml"
 	gys2 "gys/gysyaml/gys"
 	"io/ioutil"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -47,12 +48,13 @@ func extractor(gys gysyaml.Gys){
 
 func iterator(gys gysyaml.Gys) {
 	links := gys2.GenerateLinks(gys.Iterator.Url, gys.Iterator.Replace, gys.Iterator.Min, gys.Iterator.Max)
-	results := make([]string,0)
+	f, _ := os.OpenFile(gys.Output.Filename, os.O_CREATE|os.O_APPEND, 0666)
+	defer f.Close()
 	for _, link := range links{
 		doc := gys2.GetDoc(link)
 		result := gys2.ProcessMessage(doc, gys.Identificator.Selector, gys.Identificator.Attribute,gys.Identificator.Type,gys.Identificator.Default, gys.Identificator.Base)
-		results = append(results, result...)
+		r := strings.Join(result, "\n") + "\n"
+		fmt.Println(r)
+		f.WriteString(r)
 	}
-	r := strings.Join(results, gys.Output.Delimiter)
-	fmt.Print(r)
 }

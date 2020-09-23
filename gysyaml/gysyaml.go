@@ -31,7 +31,6 @@ type Gys struct {
 		}
 	}
 	Output struct {
-		Format string `yaml:"format"`
-		Delimiter string`yaml:"delimiter"`
+		Filename string `yaml:"format"`
 	}
 }

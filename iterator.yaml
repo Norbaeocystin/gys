@@ -17,5 +17,4 @@ identificator:
   base: "https://www.zoznam.sk"
 #output
 output:
-  format: "text"
-  delimiter: ","
+  filename: "zoznam.txt"
