@@ -1,4 +1,4 @@
-package gys
+package core
 
 import (
 	"strconv"

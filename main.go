@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"gys/gysyaml"
-	gys2 "gys/gysyaml/gys"
+	"gys/pkg"
+	gys2 "gys/pkg/core"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -19,7 +19,7 @@ func main() {
 	configfile := flag.String("config","iterator.yaml","yaml config file to parse")
 	flag.Parse()
 	b, _ := ioutil.ReadFile(*configfile)
-	gys := gysyaml.Gys{}
+	gys := pkg.Gys{}
 	_ = yaml.Unmarshal(b, &gys)
 	if gys.Extractor.Filewithurls != "" {
 		b, _ := ioutil.ReadFile(gys.Extractor.Filewithurls)
@@ -36,7 +36,7 @@ func main() {
 	}
 }
 
-func extractor(gys gysyaml.Gys){
+func extractor(gys pkg.Gys){
 	result := gys2.Extract(gys)
 	for _, r := range result{
 		clean := make(map[string]string)
@@ -51,7 +51,7 @@ func extractor(gys gysyaml.Gys){
 	}
 
 
-func iterator(gys gysyaml.Gys) {
+func iterator(gys pkg.Gys) {
 	links := gys2.GenerateLinks(gys.Iterator.Url, gys.Iterator.Replace, gys.Iterator.Min, gys.Iterator.Max)
 	filename := gys.Output.Filename
 	f, _ := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)

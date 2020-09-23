@@ -5,6 +5,7 @@ description: "Zoznam scraper"
 extractor:
   filewithurls: "zoznam.txt"
   format: "plain"
+  urls: ""
   selector: "div[class='col-md-8 profile middle-content']"
   type: "one"
   subselectors:

@@ -1,12 +1,12 @@
-package gys
+package core
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	"gys/gysyaml"
+	"gys/pkg"
 	"strings"
 )
 
-func Extract( gys gysyaml.Gys) []map[string]string {
+func Extract( gys pkg.Gys) []map[string]string {
 	ext := gys.Extractor
 	urls := strings.Split(ext.Urls, ",")
 	results := make([]map[string]string,0)
@@ -17,7 +17,7 @@ func Extract( gys gysyaml.Gys) []map[string]string {
 	return results
 }
 
-func ExtractInfoUrl(urlstring string, gys *gysyaml.Gys) []map[string]string {
+func ExtractInfoUrl(urlstring string, gys *pkg.Gys) []map[string]string {
 	ext := gys.Extractor
 	doc := GetDoc(urlstring)
 	typ := ext.Type

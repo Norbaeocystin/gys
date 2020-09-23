@@ -1,4 +1,4 @@
-package gysyaml
+package pkg
 
 type Gys struct {
 	Name string `yaml:"name"`
@@ -33,5 +33,18 @@ type Gys struct {
 	}
 	Output struct {
 		Filename string `yaml:"filename"`
+	}
+}
+
+type GysServer struct {
+	Url string `json:"Url"`
+	Selector string `json:"selector"`
+	Type string  `json:"type"`
+	Subselectors []struct{
+		Attribute string `json:"attribute"`
+		Selector string`json:"selector"`
+		Name string `json:"name"`
+		Split string `json:"split"`
+		Default string `json:"default"`
 	}
 }
