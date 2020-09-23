@@ -3,7 +3,8 @@ version: 1.0.0
 description: "Zoznam scraper"
 # input url
 extractor:
-  urls: "https://www.zoznam.sk/firma/3127007/A-a-Z-Bardejov,https://www.zoznam.sk/firma/76950/A-A-A-CISTENIE-Lubomir-Vrablik-Bratislava"
+  filewithurls: "zoznam.txt"
+  format: "plain"
   selector: "div[class='col-md-8 profile middle-content']"
   type: "one"
   subselectors:

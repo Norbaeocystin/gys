@@ -19,7 +19,8 @@ type Gys struct {
 		Base string `yaml:"base"`
 		}
 	Extractor struct {
-		Urls string `yaml:"urls"`
+		Filewithurls string `yaml:"filewithurls"`
+		Urls string `yaml:"Urls"`
 		Selector string `yaml:"selector"`
 		Type string  `yaml:"type"`
 		Subselectors []struct{
@@ -31,6 +32,6 @@ type Gys struct {
 		}
 	}
 	Output struct {
-		Filename string `yaml:"format"`
+		Filename string `yaml:"filename"`
 	}
 }

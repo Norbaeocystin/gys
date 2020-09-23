@@ -21,6 +21,11 @@ func main() {
 	b, _ := ioutil.ReadFile(*configfile)
 	gys := gysyaml.Gys{}
 	_ = yaml.Unmarshal(b, &gys)
+	if gys.Extractor.Filewithurls != "" {
+		b, _ := ioutil.ReadFile(gys.Extractor.Filewithurls)
+		urls := strings.ReplaceAll(string(b), "\n", ",")
+		gys.Extractor.Urls = urls
+	}
 	if *urls != ""{
 		gys.Extractor.Urls = *urls
 	}
@@ -48,13 +53,15 @@ func extractor(gys gysyaml.Gys){
 
 func iterator(gys gysyaml.Gys) {
 	links := gys2.GenerateLinks(gys.Iterator.Url, gys.Iterator.Replace, gys.Iterator.Min, gys.Iterator.Max)
-	f, _ := os.OpenFile(gys.Output.Filename, os.O_CREATE|os.O_APPEND, 0666)
+	filename := gys.Output.Filename
+	f, _ := os.OpenFile(filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer f.Close()
 	for _, link := range links{
 		doc := gys2.GetDoc(link)
 		result := gys2.ProcessMessage(doc, gys.Identificator.Selector, gys.Identificator.Attribute,gys.Identificator.Type,gys.Identificator.Default, gys.Identificator.Base)
-		r := strings.Join(result, "\n") + "\n"
+		r := strings.Join(result, "\n")
 		fmt.Println(r)
 		f.WriteString(r)
 	}
+	f.Sync()
 }
