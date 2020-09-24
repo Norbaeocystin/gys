@@ -39,7 +39,6 @@ type 	Identificator struct {
 }
 
 type Extractor struct {
-	Filewithurls string
 	Urls string
 	Selector string
 	Type string
