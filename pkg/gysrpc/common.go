@@ -1,10 +1,13 @@
 package gysrpc
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"github.com/PuerkitoBio/goquery"
 	gys2 "gys/pkg/core"
 	"log"
 	"strings"
+	"time"
 )
 
 type GysRpc struct {
@@ -59,11 +62,10 @@ type Storage map[string][]map[string]string
 
 type IteratorStorage map[string][]string
 
-type ResultHash string
-
-func (rh ResultHash)String() string{
-	return string(rh)
+type ResultHash struct {
+	Hash string
 }
+
 
 type RPCHandler struct {
 	Storage Storage
@@ -79,17 +81,33 @@ func ( h *RPCHandler) Execute(request *GysRpc, response *Response) error {
 }
 
 func  (h *RPCHandler)ExtractAll(request *GysMain, response *ResultHash) error {
-	*response = "hash"
+	ex := request.Extractor
+	stringbeforehash := time.Now().String() + ex.Urls + ex.Type + ex.Selector
+	hash := SHA1(stringbeforehash)
+	response.Hash = hash
 	go func(){
 		r := ExtractGysmain(*request)
-		h.Storage[response.String()] = r
+		h.Storage[response.Hash] = r
+	}()
+	return nil
+}
+
+func  (h *RPCHandler)Iterate(request *GysMain, response *ResultHash) error {
+	it := request.Iterator
+	id := request.Identificator
+	stringbeforehash := time.Now().String() + it.Replace + it.Url + id.Name + id.Base
+	hash := SHA1(stringbeforehash)
+	response.Hash = hash
+	go func(){
+		r := Iterate(*request)
+		h.IteratorStorage[response.Hash] = r
 	}()
 	return nil
 }
 
 func ( h *RPCHandler) FindExtract(hash *ResultHash, response *Response) error {
 	log.Println("Searching info")
-	r, ok := h.Storage[hash.String()]
+	r, ok := h.Storage[hash.Hash]
 	if ok {
 		*response = r
 	}else{
@@ -102,7 +120,7 @@ func ( h *RPCHandler) FindExtract(hash *ResultHash, response *Response) error {
 }
 func ( h *RPCHandler) FindIteration(hash *ResultHash, response *IteratorResponse) error {
 	log.Println("Searching info")
-	r, ok := h.IteratorStorage[hash.String()]
+	r, ok := h.IteratorStorage[hash.Hash]
 	if ok {
 		*response = r
 	}else{
@@ -235,4 +253,10 @@ func Iterate(gys GysMain) []string {
 		results = append(results, result...)
 	}
 	return results
+}
+
+func SHA1(text string) string {
+	algorithm := sha1.New()
+	algorithm.Write([]byte(text))
+	return string(hex.EncodeToString(algorithm.Sum(nil)))
 }
