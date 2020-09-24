@@ -10,7 +10,8 @@ import (
 func ServeRpc() {
 	log.Println("Starting rpc server")
 	r := new(RPCHandler)
-	err := rpc.Register(r)
+	srv := rpc.NewServer()
+	err := srv.Register(r)
 	log.Println(err)
 	listener, err := net.Listen("tcp", ":9000")
 	log.Println(err)
@@ -21,7 +22,7 @@ func ServeRpc() {
 			log.Fatal("accept error: " + err.Error())
 		} else {
 			log.Printf("new connection established\n")
-			go rpc.ServeCodec(jsonrpc.NewServerCodec(conn))
+			go srv.ServeCodec(jsonrpc.NewServerCodec(conn))
 		}
 	}
 }

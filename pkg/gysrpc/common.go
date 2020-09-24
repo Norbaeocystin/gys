@@ -2,7 +2,7 @@ package gysrpc
 
 import (
 	"github.com/PuerkitoBio/goquery"
-	"gys/pkg/core"
+	gys2 "gys/pkg/core"
 	"log"
 	"strings"
 )
@@ -22,9 +22,54 @@ type Subselector struct{
 	Default string
 }
 
+type 	Iterator   struct {
+	Url     string
+	Replace string
+	Min     int
+	Max     int
+}
+
+type 	Identificator struct {
+	Attribute string
+	Selector string
+	Name string
+	Type string
+	Default string
+	Base string
+}
+
+type Extractor struct {
+	Filewithurls string
+	Urls string
+	Selector string
+	Type string
+	Subselectors []Subselector
+}
+
+type GysMain struct {
+	Iterator   Iterator
+	Identificator Identificator
+	Extractor Extractor
+}
+
 type Response []map[string]string
 
-type RPCHandler struct {}
+type IteratorResponse []string
+
+type Storage map[string][]map[string]string
+
+type IteratorStorage map[string][]string
+
+type ResultHash string
+
+func (rh ResultHash)String() string{
+	return string(rh)
+}
+
+type RPCHandler struct {
+	Storage Storage
+	IteratorStorage IteratorStorage
+}
 
 func ( h *RPCHandler) Execute(request *GysRpc, response *Response) error {
 	log.Println("Extracting info")
@@ -34,6 +79,41 @@ func ( h *RPCHandler) Execute(request *GysRpc, response *Response) error {
 	return nil
 }
 
+func  (h *RPCHandler)ExtractAll(request *GysMain, response *ResultHash) error {
+	*response = "hash"
+	go func(){
+		r := ExtractGysmain(*request)
+		h.Storage[response.String()] = r
+	}()
+	return nil
+}
+
+func ( h *RPCHandler) FindExtract(hash *ResultHash, response *Response) error {
+	log.Println("Searching info")
+	r, ok := h.Storage[hash.String()]
+	if ok {
+		*response = r
+	}else{
+		res := make(map[string]string)
+		res["success"] = "false"
+		resp := []map[string]string{res}
+		*response = resp
+	}
+	return nil
+}
+func ( h *RPCHandler) FindIteration(hash *ResultHash, response *IteratorResponse) error {
+	log.Println("Searching info")
+	r, ok := h.IteratorStorage[hash.String()]
+	if ok {
+		*response = r
+	}else{
+		resp := []string{"false"}
+		*response = resp
+	}
+	return nil
+}
+
+
 
 func Extract( ext GysRpc) []map[string]string {
 	res := ExtractInfoUrl(ext.Url, &ext)
@@ -41,7 +121,7 @@ func Extract( ext GysRpc) []map[string]string {
 }
 
 func ExtractInfoUrl(urlstring string, gys *GysRpc) []map[string]string {
-	doc := core.GetDoc(urlstring)
+	doc := gys2.GetDoc(urlstring)
 	typ := gys.Type
 	switch typ{
 	case "many":
@@ -68,23 +148,6 @@ func ExtractInfoUrl(urlstring string, gys *GysRpc) []map[string]string {
 	return make([]map[string]string,0)
 }
 
-
-func ExtractSubselector(selector, attribute, defaultvalue, name, split string, result map[string]string, selection goquery.Selection){
-	if len(split) > 0{
-		selection.Find(selector).Each(func(i int, sel *goquery.Selection) {
-			s := GetAttr(sel, attribute, defaultvalue)
-			if strings.Contains(s, split) {
-				splits := strings.SplitN(s, split, 2)
-				result[splits[0]] = splits[1]
-			}
-		})
-	}else{
-		sel := selection.Find(selector) //.AttrOr(attribute, defaultvalue)
-		s := GetAttr(sel, attribute, defaultvalue)
-		result[name] = s
-	}
-}
-
 func GetAttr(sel *goquery.Selection, attribute, defaultvalue string) string {
 	switch attribute{
 	case "text":
@@ -103,4 +166,74 @@ func GetAttr(sel *goquery.Selection, attribute, defaultvalue string) string {
 		s := sel.AttrOr(attribute, defaultvalue)
 		return s
 	}
+}
+
+func ExtractGysmain( gys GysMain) []map[string]string {
+	ext := gys.Extractor
+	urls := strings.Split(ext.Urls, ",")
+	results := make([]map[string]string,0)
+	for _, url := range urls{
+		res := ExtractInfoUrlGysmain(url, &gys)
+		results = append(results, res...)
+	}
+	return results
+}
+
+func ExtractInfoUrlGysmain(urlstring string, gys *GysMain) []map[string]string {
+	ext := gys.Extractor
+	doc := gys2.GetDoc(urlstring)
+	typ := ext.Type
+	switch typ{
+	case "many":
+		results := make([]map[string]string,0)
+		doc.Find(ext.Selector).Each(func(i int, s *goquery.Selection){
+			for _, sub := range ext.Subselectors{
+				result := make(map[string]string)
+				ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *s)
+				result["urlsource"] = urlstring
+				results = append(results, result)
+			}
+		})
+		return results
+	case "one":
+		result := make(map[string]string)
+		result["urlsource"] = urlstring
+		r := doc.Find(ext.Selector)
+		for _, sub := range ext.Subselectors{
+			ExtractSubselector(sub.Selector,sub.Attribute,sub.Default, sub.Name, sub.Split, result, *r)
+		}
+		res := []map[string]string{result}
+		return res
+	}
+	return make([]map[string]string,0)
+}
+
+
+func ExtractSubselector(selector, attribute, defaultvalue, name, split string, result map[string]string, selection goquery.Selection){
+	if len(split) > 0{
+		selection.Find(selector).Each(func(i int, sel *goquery.Selection) {
+			//log.Println(sel.Text())
+			s := GetAttr(sel, attribute, defaultvalue)
+			//log.Println(s)
+			if strings.Contains(s, split) {
+				splits := strings.SplitN(s, split, 2)
+				result[splits[0]] = splits[1]
+			}
+		})
+	}else{
+		sel := selection.Find(selector) //.AttrOr(attribute, defaultvalue)
+		s := GetAttr(sel, attribute, defaultvalue)
+		result[name] = s
+	}
+}
+
+func Iterate(gys GysMain) []string {
+	links := gys2.GenerateLinks(gys.Iterator.Url, gys.Iterator.Replace, gys.Iterator.Min, gys.Iterator.Max)
+	results := make([]string, 0)
+	for _, link := range links{
+		doc := gys2.GetDoc(link)
+		result := gys2.ProcessMessage(doc, gys.Identificator.Selector, gys.Identificator.Attribute,gys.Identificator.Type,gys.Identificator.Default, gys.Identificator.Base)
+		results = append(results, result...)
+	}
+	return results
 }
