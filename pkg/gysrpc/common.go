@@ -109,6 +109,7 @@ func ( h *RPCHandler) FindExtract(hash *ResultHash, response *Response) error {
 	log.Println("Searching info")
 	r, ok := h.Storage[hash.Hash]
 	if ok {
+		delete (h.Storage, hash.Hash)
 		*response = r
 	}else{
 		res := make(map[string]string)
@@ -122,6 +123,7 @@ func ( h *RPCHandler) FindIteration(hash *ResultHash, response *IteratorResponse
 	log.Println("Searching info")
 	r, ok := h.IteratorStorage[hash.Hash]
 	if ok {
+		delete (h.IteratorStorage, hash.Hash)
 		*response = r
 	}else{
 		resp := []string{"false"}
