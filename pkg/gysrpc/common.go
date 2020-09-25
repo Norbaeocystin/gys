@@ -33,8 +33,8 @@ type 	Iterator   struct {
 }
 
 type 	Identificator struct {
-	Attribute string
 	Selector string
+	Attribute string
 	Name string
 	Type string
 	Default string
@@ -42,7 +42,7 @@ type 	Identificator struct {
 }
 
 type Extractor struct {
-	Urls string
+	Urls []string
 	Selector string
 	Type string
 	Subselectors []Subselector
@@ -72,6 +72,13 @@ type RPCHandler struct {
 	IteratorStorage IteratorStorage
 }
 
+func NewRPCHandler() *RPCHandler{
+	r := RPCHandler{}
+	r.Storage = make(map[string][]map[string]string)
+	r.IteratorStorage = make(map[string][]string)
+	return &r
+}
+
 func ( h *RPCHandler) Execute(request *GysRpc, response *Response) error {
 	log.Println("Extracting info")
 	log.Println(request)
@@ -82,7 +89,7 @@ func ( h *RPCHandler) Execute(request *GysRpc, response *Response) error {
 
 func  (h *RPCHandler)ExtractAll(request *GysMain, response *ResultHash) error {
 	ex := request.Extractor
-	stringbeforehash := time.Now().String() + ex.Urls + ex.Type + ex.Selector
+	stringbeforehash := time.Now().String() + ex.Urls[0] + ex.Type + ex.Selector
 	hash := SHA1(stringbeforehash)
 	response.Hash = hash
 	go func(){
@@ -98,10 +105,10 @@ func  (h *RPCHandler)Iterate(request *GysMain, response *ResultHash) error {
 	stringbeforehash := time.Now().String() + it.Replace + it.Url + id.Name + id.Base
 	hash := SHA1(stringbeforehash)
 	response.Hash = hash
-	go func(){
+	go func(h *RPCHandler, response *ResultHash){
 		r := Iterate(*request)
 		h.IteratorStorage[response.Hash] = r
-	}()
+	}(h,response)
 	return nil
 }
 
@@ -109,9 +116,11 @@ func ( h *RPCHandler) FindExtract(hash *ResultHash, response *Response) error {
 	log.Println("Searching info")
 	r, ok := h.Storage[hash.Hash]
 	if ok {
+		log.Println("Extract found. Hash: ",hash.Hash)
 		delete (h.Storage, hash.Hash)
 		*response = r
 	}else{
+		log.Println("Extract not found. Hash: ",hash.Hash)
 		res := make(map[string]string)
 		res["success"] = "false"
 		resp := []map[string]string{res}
@@ -123,9 +132,11 @@ func ( h *RPCHandler) FindIteration(hash *ResultHash, response *IteratorResponse
 	log.Println("Searching info")
 	r, ok := h.IteratorStorage[hash.Hash]
 	if ok {
-		delete (h.IteratorStorage, hash.Hash)
+		log.Println("Iteration found. Hash: ",hash.Hash)
 		*response = r
+		delete (h.IteratorStorage, hash.Hash)
 	}else{
+		log.Println("Iteration not found. Hash: ",hash.Hash)
 		resp := []string{"false"}
 		*response = resp
 	}
@@ -189,9 +200,8 @@ func GetAttr(sel *goquery.Selection, attribute, defaultvalue string) string {
 
 func ExtractGysmain( gys GysMain) []map[string]string {
 	ext := gys.Extractor
-	urls := strings.Split(ext.Urls, ",")
 	results := make([]map[string]string,0)
-	for _, url := range urls{
+	for _, url := range ext.Urls{
 		res := ExtractInfoUrlGysmain(url, &gys)
 		results = append(results, res...)
 	}
@@ -252,6 +262,7 @@ func Iterate(gys GysMain) []string {
 	for _, link := range links{
 		doc := gys2.GetDoc(link)
 		result := gys2.ProcessMessage(doc, gys.Identificator.Selector, gys.Identificator.Attribute,gys.Identificator.Type,gys.Identificator.Default, gys.Identificator.Base)
+		log.Println(result)
 		results = append(results, result...)
 	}
 	return results

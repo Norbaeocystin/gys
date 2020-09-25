@@ -9,7 +9,8 @@ import (
 
 func ServeRpc() {
 	log.Println("Starting rpc server")
-	r := new(RPCHandler)
+	//r := new(RPCHandler)
+	r := NewRPCHandler()
 	srv := rpc.NewServer()
 	err := srv.Register(r)
 	log.Println(err)
