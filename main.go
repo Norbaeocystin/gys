@@ -1,4 +1,4 @@
-// ./gys --config iterator.yaml | (read u; ./gys --config extractor.yaml --urls $u)
+// ./gys --config iterator.yaml | (read u; ./gys --config generator.yaml --urls $u)
 package main
 
 import (

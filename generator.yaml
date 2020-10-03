@@ -3,7 +3,7 @@ version: 1.0.0
 description: "Zoznam scraper"
 # input url
 extractor:
-  filewithurls: "zoznam.txt"
+  filewithurls: "zoznam.txt" #"zoznam_companies_url.txt" #"zoznam.txt"
   format: "plain"
   urls: ""
   selector: "div[class='col-md-8 profile middle-content']"

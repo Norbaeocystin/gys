@@ -6,7 +6,7 @@ iterator:
   url: "https://www.zoznam.sk/katalog/Spravodajstvo-informacie/Abecedny-zoznam-firiem/A/sekcia.fcgi?sid=1173&so=&page=PAGE"
   replace: "PAGE"
   min: 1
-  max: 2
+  max: 10
 #identify
 identificator:
   selector: "a.link_title"

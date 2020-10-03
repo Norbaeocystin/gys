@@ -11,8 +11,10 @@ func Extract( gys pkg.Gys) []map[string]string {
 	urls := strings.Split(ext.Urls, ",")
 	results := make([]map[string]string,0)
 	for _, url := range urls{
-		res := ExtractInfoUrl(url, &gys)
-		results = append(results, res...)
+		if strings.HasPrefix(url, "http"){
+			res := ExtractInfoUrl(url, &gys)
+			results = append(results, res...)
+		}
 	}
 	return results
 }
